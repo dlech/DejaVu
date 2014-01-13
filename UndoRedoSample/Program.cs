@@ -1,9 +1,9 @@
 // Siarhei Arkhipenka (c) 2006-2007. email: sbs-arhipenko@yandex.ru
+
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace UndoRedoDemo
+namespace UndoRedoSample
 {
     static class Program
     {

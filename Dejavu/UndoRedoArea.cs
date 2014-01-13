@@ -18,8 +18,8 @@ namespace DejaVu
 	{
 		/// <summary>This field serves primarily for debugging purposes</summary>
 		public readonly string Name;
-		object affinityOwner;
-		Log log = new Log(UndoRedoManager.MaxLogSize);
+		object _affinityOwner;
+		Log _log = new Log(UndoRedoManager.MaxLogSize);
 
 		/// <summary>
 		/// Initializes new area
@@ -28,17 +28,17 @@ namespace DejaVu
 		public UndoRedoArea(string name)
 		{
 			Name = name;
-			commandsStack.Push(null);
+			_commandsStack.Push(null);
 		}
 		[ThreadStatic]
-		private static UndoRedoArea currentArea = null;
+		private static UndoRedoArea _currentArea = null;
 		internal static UndoRedoArea CurrentArea
 		{
-			get { return currentArea; }
+			get { return _currentArea; }
 		}
 
-		private List<Command> history = new List<Command>();
-		private int currentPosition = -1;
+		private readonly List<Command> _history = new List<Command>();
+		private int _currentPosition = -1;
 
 		Command _currentCommand; // this field made for performance reasons to eliminate excessive access to commands stack
 		internal Command CurrentCommand
@@ -50,34 +50,33 @@ namespace DejaVu
 			}
 		}
 
-		private Stack<Command> commandsStack = new Stack<Command>();
+		private readonly Stack<Command> _commandsStack = new Stack<Command>();
 		private void PushCommand(Command command)
 		{
-			commandsStack.Push(command);
+			_commandsStack.Push(command);
 			_currentCommand = command;
 		}
 
 		private Command PopCommand()
 		{
-			if (_currentCommand != null)
-			{
-				Command command = commandsStack.Pop();
-				_currentCommand = commandsStack.Peek();
-				return command;
-			}
-			else
-			{
-				Debug.Fail("Commands stack is empty");
-				return null;
-			}
+		    if (_currentCommand == null)
+		    {
+		        Debug.Fail("Commands stack is empty");
+		        return null;
+		    }
+
+		    Command command = _commandsStack.Pop();
+		    _currentCommand = _commandsStack.Peek();
+		    return command;
 		}
-		private void ClearCommands()
+
+	    private void ClearCommands()
 		{
-			while ((_currentCommand = commandsStack.Pop()) != null)
+			while ((_currentCommand = _commandsStack.Pop()) != null)
 			{
 				_currentCommand.Finished = true;
 			}
-			commandsStack.Push(null);
+			_commandsStack.Push(null);
 		}
 
 		private bool IsAnyParentCommand()
@@ -89,12 +88,12 @@ namespace DejaVu
 		/// <summary>Returns true if history has command that can be undone</summary>
 		public bool CanUndo
 		{
-			get { return currentPosition >= 0; }
+			get { return _currentPosition >= 0; }
 		}
 		/// <summary>Returns true if history has command that can be redone</summary>
 		public bool CanRedo
 		{
-			get { return currentPosition < history.Count - 1; }
+			get { return _currentPosition < _history.Count - 1; }
 		}
 		/// <summary>Undo last command from history list</summary>
 		public void Undo()
@@ -102,9 +101,9 @@ namespace DejaVu
 			AssertNoCommand();
 			if (CanUndo)
 			{
-				affinityOwner = null;
-				Command command = history[currentPosition--];
-				log.Add("[Undo '" + command.Caption + "']");
+				_affinityOwner = null;
+				Command command = _history[_currentPosition--];
+				_log.Add("[Undo '" + command.Caption + "']");
 				command.Undo();
 				
 				OnCommandDone(command, CommandDoneType.Undo);
@@ -116,9 +115,9 @@ namespace DejaVu
 			AssertNoCommand();
 			if (CanRedo)
 			{
-				affinityOwner = null;
-				Command command = history[++currentPosition];
-				log.Add("[Redo '" + command.Caption + "']");
+				_affinityOwner = null;
+				Command command = _history[++_currentPosition];
+				_log.Add("[Redo '" + command.Caption + "']");
 				command.Redo();
 				
 				OnCommandDone(command, CommandDoneType.Redo);
@@ -131,8 +130,8 @@ namespace DejaVu
 		/// <returns>Interface that allows properly finish the command with 'using' statement</returns>
 		public IDisposable Start(string commandCaption)
 		{
-			this.affinityOwner = null;
-			log.Add("'" + commandCaption + "'");
+			this._affinityOwner = null;
+			_log.Add("'" + commandCaption + "'");
 			return Start(commandCaption, true);
 		}
 		/// <summary>
@@ -150,18 +149,18 @@ namespace DejaVu
 		/// <returns>Interface that allows properly finish the command with 'using' statement</returns>
 		public IDisposable Start(string commandCaption, object owner)
 		{
-			if (owner == this.affinityOwner && // owners are equal
+			if (owner == this._affinityOwner && // owners are equal
 				owner != null && // owners are not null
-				currentPosition >= 0 && // history has a command to check affinity
-				history[currentPosition].Caption == commandCaption) // captions are equal
+				_currentPosition >= 0 && // history has a command to check affinity
+				_history[_currentPosition].Caption == commandCaption) // captions are equal
 			{
-				log.Add("'" + commandCaption + "' (affined)");
+				_log.Add("'" + commandCaption + "' (affined)");
 				return Start(commandCaption, false);
 			}
 			else
 			{
-				this.affinityOwner = owner;
-				log.Add("'" + commandCaption + "'");
+				this._affinityOwner = owner;
+				_log.Add("'" + commandCaption + "'");
 				return Start(commandCaption, true);
 			}
 		}
@@ -182,12 +181,12 @@ namespace DejaVu
 		/// <returns>Interface that allows properly finish the command with 'using' statement</returns>
 		public IDisposable StartInvisible(string commandCaption)
 		{
-			log.Add("'" + commandCaption + "' (invisible)");
+			_log.Add("'" + commandCaption + "' (invisible)");
 			return Start(commandCaption, false);
 		}
 		private IDisposable Start(string commandCaption, bool visible)
 		{
-			currentArea = this;
+			_currentArea = this;
 			Command command = new Command(commandCaption, this, visible);
 			PushCommand(command);
 			return command;
@@ -196,7 +195,7 @@ namespace DejaVu
 		public void Commit()
 		{
 			AssertCurrentCommand();
-			log.Add("    [Commit]");
+			_log.Add("    [Commit]");
 
 			Command commitedCommand = PopCommand();
 			if (commitedCommand.HasChanges)
@@ -210,21 +209,21 @@ namespace DejaVu
 				else 
 				{	// put command into the history
 					// remove all redo records
-					int count = history.Count - currentPosition - 1;
-					history.RemoveRange(currentPosition + 1, count);
+					int count = _history.Count - _currentPosition - 1;
+					_history.RemoveRange(_currentPosition + 1, count);
 
 					// add command to history 
 					if (commitedCommand.Visible)
 					{
-						history.Add(commitedCommand);
-						currentPosition++;
+						_history.Add(commitedCommand);
+						_currentPosition++;
 						TruncateHistory();
 					}
 					else
 					{
 						// merge with previous command
-						if (currentPosition >= 0)
-							history[currentPosition].Merge(commitedCommand);
+						if (_currentPosition >= 0)
+							_history[_currentPosition].Merge(commitedCommand);
 					}
 
 					OnCommandDone(commitedCommand, CommandDoneType.Commit);
@@ -237,7 +236,7 @@ namespace DejaVu
 		public void Cancel()
 		{
 			AssertCurrentCommand();
-			log.Add("    [Cancel]");
+			_log.Add("    [Cancel]");
 			Command cancelledCommand = PopCommand();
 			cancelledCommand.Undo();
 		}	
@@ -249,9 +248,9 @@ namespace DejaVu
 		public void ClearHistory()
 		{
 			ClearCommands();
-			currentPosition = -1;
-			history.Clear();
-			log.Add("[Clear History]");
+			_currentPosition = -1;
+			_history.Clear();
+			_log.Add("[Clear History]");
 		}
 
 		/// <summary>Checks that there is no command started in current thread</summary>
@@ -261,14 +260,14 @@ namespace DejaVu
 			if (CurrentCommand != null)
 				throw new InvalidOperationException("Previous command is not completed. Use UndoRedoManager.Commit() to complete current command.");
 			// check command in area that is current now 
-			if (currentArea != null && currentArea.CurrentCommand != null)
+			if (_currentArea != null && _currentArea.CurrentCommand != null)
 				throw new InvalidOperationException("A command of another area has already started in current thread.");
 		}
 
 		/// <summary>Checks that command had been started</summary>
 		internal static void AssertCommand()
 		{
-			if (currentArea == null || currentArea.CurrentCommand == null)
+			if (_currentArea == null || _currentArea.CurrentCommand == null)
 				throw new InvalidOperationException("Command is not started. Use methods UndoRedoManager.Start() or UndoRedoArea.Start() before changing any data.");
 		}
 		/// <summary>Checks that command had been started in given area</summary>
@@ -290,9 +289,9 @@ namespace DejaVu
 		{
 			get
 			{
-				for (int i = currentPosition; i >= 0; i--)
-					if (history[i].Visible)
-						yield return history[i].Caption;
+				for (int i = _currentPosition; i >= 0; i--)
+					if (_history[i].Visible)
+						yield return _history[i].Caption;
 			}
 		}
 		/// <summary>Gets an enumeration of commands captions that can be redone.</summary>
@@ -301,16 +300,16 @@ namespace DejaVu
 		{
 			get
 			{
-				for (int i = currentPosition + 1; i < history.Count; i++)
-					if (history[i].Visible)
-						yield return history[i].Caption;
+				for (int i = _currentPosition + 1; i < _history.Count; i++)
+					if (_history[i].Visible)
+						yield return _history[i].Caption;
 			}
 		}
 		#endregion
 
 		#region History Size
 
-		private int maxHistorySize = 0;
+		private int _maxHistorySize = 0;
 
 		/// <summary>
 		/// Gets/sets max commands stored in history. 
@@ -318,26 +317,26 @@ namespace DejaVu
 		/// </summary>
 		public int MaxHistorySize
 		{
-			get { return maxHistorySize; }
+			get { return _maxHistorySize; }
 			set
 			{
 				if (IsCommandStarted)
 					throw new InvalidOperationException("Max size may not be set while command is run.");
 				if (value < 0)
 					throw new ArgumentOutOfRangeException("Value may not be less than 0");
-				maxHistorySize = value;
+				_maxHistorySize = value;
 				TruncateHistory();
 			}
 		}
 
 		private void TruncateHistory()
 		{
-			if (maxHistorySize > 0)
-				if (history.Count > maxHistorySize)
+			if (_maxHistorySize > 0)
+				if (_history.Count > _maxHistorySize)
 				{
-					int count = history.Count - maxHistorySize;
-					history.RemoveRange(0, count);
-					currentPosition -= count;
+					int count = _history.Count - _maxHistorySize;
+					_history.RemoveRange(0, count);
+					_currentPosition -= count;
 				}
 		}
 		#endregion
@@ -352,18 +351,18 @@ namespace DejaVu
 
 		internal string GetLog()
 		{
-			return log.ToString();
+			return _log.ToString();
 		}
 
 		internal void WriteLog(string message)
 		{
 			// add with indentation
-			log.Add("    " + message);
+			_log.Add("    " + message);
 		}
 
 		internal void ClearLog()
 		{
-			log = new Log(UndoRedoManager.MaxLogSize);
+			_log = new Log(UndoRedoManager.MaxLogSize);
 		}
 
 
@@ -380,60 +379,60 @@ namespace DejaVu
 				subscriptions.Add(member, subscription);
 			}
 			subscription.Changed += handler;
-		}*/		
+		}*/	
 	}
 
 	static class UndoRedoMemberExtender
 	{
-		static Dictionary<IUndoRedoMember, object> owners = new Dictionary<IUndoRedoMember, object>();
+		static readonly Dictionary<IUndoRedoMember, object> Owners = new Dictionary<IUndoRedoMember, object>();
 		public static void SetOwner(IUndoRedoMember member, object owner)
 		{
-			owners[member] = owner;
+			Owners[member] = owner;
 		}
 		public static object GetOwner(IUndoRedoMember member)
 		{
-			return owners[member];
+			return Owners[member];
 		}
 
-		static Dictionary<IUndoRedoMember, string> names = new Dictionary<IUndoRedoMember, string>();
+		static readonly Dictionary<IUndoRedoMember, string> Names = new Dictionary<IUndoRedoMember, string>();
 		public static void SetName(IUndoRedoMember member, string name)
 		{
-			names[member] = name;
+			Names[member] = name;
 		}
 		public static string GetName(IUndoRedoMember member)
 		{
-			return names[member];
+			return Names[member];
 		}
 
-		static Dictionary<IUndoRedoMember, EventHandler<MemberChangedEventArgs>> subscriptions = new Dictionary<IUndoRedoMember, EventHandler<MemberChangedEventArgs>>();
+		static readonly Dictionary<IUndoRedoMember, EventHandler<MemberChangedEventArgs>> Subscriptions = new Dictionary<IUndoRedoMember, EventHandler<MemberChangedEventArgs>>();
 		public static void SubscribeChanges(IUndoRedoMember member, EventHandler<MemberChangedEventArgs> handler)
 		{
 			EventHandler<MemberChangedEventArgs> subscription;
-			if (subscriptions.ContainsKey(member))
+			if (Subscriptions.ContainsKey(member))
 			{
-				subscription = subscriptions[member];
+				subscription = Subscriptions[member];
 				subscription += handler;
 			}
 			else
 			{
-				subscription = new EventHandler<MemberChangedEventArgs>(handler);
-				subscriptions.Add(member, subscription);
+				subscription = handler;
+				Subscriptions.Add(member, subscription);
 			}			
 		}
 		public static void UnsubscribeChanges(IUndoRedoMember member, EventHandler<MemberChangedEventArgs> handler)
 		{
-			if (subscriptions.ContainsKey(member))
+			if (Subscriptions.ContainsKey(member))
 			{
-				EventHandler<MemberChangedEventArgs> subscription = subscriptions[member];
+				EventHandler<MemberChangedEventArgs> subscription = Subscriptions[member];
 				subscription -= handler;
 			}
 		}
 
 		internal static void OnChanged(IUndoRedoMember member, CommandDoneType commandType, object newObject, object oldObject)
 		{
-			if (subscriptions.ContainsKey(member))
+			if (Subscriptions.ContainsKey(member))
 			{
-				subscriptions[member](member, new MemberChangedEventArgs(member, commandType, newObject, oldObject));
+				Subscriptions[member](member, new MemberChangedEventArgs(member, commandType, newObject, oldObject));
 			}
 		}
 

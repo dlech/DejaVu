@@ -15,20 +15,16 @@ namespace DejaVu
     public static class UndoRedoManager
     {
 		public const int MaxLogSize = 100;
-		public static UndoRedoArea defaultArea;
-		public static UndoRedoArea DefaultArea
-		{
-			get { return defaultArea; }
-		}
+	    public static UndoRedoArea DefaultArea { get; set; }
 
-		static UndoRedoManager()
+	    static UndoRedoManager()
 		{
 			InitDefaultArea();
 		}
 		private static void InitDefaultArea()
 		{
-			defaultArea = new UndoRedoArea("#Default");
-			defaultArea.CommandDone += delegate(object sender, CommandDoneEventArgs type)
+			DefaultArea = new UndoRedoArea("#Default");
+			DefaultArea.CommandDone += delegate(object sender, CommandDoneEventArgs type)
 			{
 				if (CommandDone != null)
 					CommandDone(sender, type);

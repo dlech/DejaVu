@@ -9,28 +9,28 @@ namespace DejaVu
     {
         public UndoRedo()
         {
-            tValue = default(TValue);
+            _tValue = default(TValue);
         }
         public UndoRedo(TValue defaultValue)
         {
-            tValue = defaultValue;
+            _tValue = defaultValue;
         }
 
-        TValue tValue;
+        TValue _tValue;
         public TValue Value
         {
-            get { return tValue; }
+            get { return _tValue; }
             set 
             {
 				UndoRedoArea.AssertCommand();
 				Command command = UndoRedoArea.CurrentArea.CurrentCommand;
 				if (!command.IsEnlisted(this))
 				{
-					Change<TValue> change = new Change<TValue>();
-					change.OldState = tValue;
+					var change = new Change<TValue>();
+					change.OldState = _tValue;
 					command[this] = change;
 				}
-				tValue = value;
+				_tValue = value;
             }
         }
 
@@ -39,19 +39,19 @@ namespace DejaVu
         void IUndoRedoMember.OnCommit(object change)
         {
             Debug.Assert(change != null);
-            ((Change<TValue>)change).NewState = tValue;
+            ((Change<TValue>)change).NewState = _tValue;
         }
 
         void IUndoRedoMember.OnUndo(object change)
         {
             Debug.Assert(change != null);
-            tValue = ((Change<TValue>)change).OldState;
+            _tValue = ((Change<TValue>)change).OldState;
         }
 
         void IUndoRedoMember.OnRedo(object change)
         {
             Debug.Assert(change != null);
-            tValue = ((Change<TValue>)change).NewState;
+            _tValue = ((Change<TValue>)change).NewState;
         }
 		// properties Owner, Name and event Changed are implemented on extender pattern but do not require .NET 3.0 
 		// implementation optimised in favor of memory consumption sacrificing performance a little

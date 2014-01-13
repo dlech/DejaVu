@@ -1,22 +1,22 @@
 // Siarhei Arkhipenka (c) 2006-2007. email: sbs-arhipenko@yandex.ru
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Data;
-using System.Text;
+using System.Linq;
+using System.Reflection;
 using System.Windows.Forms;
 using DejaVu;
-using System.Reflection;
+using UndoRedoSample.Data;
 
-namespace UndoRedoDemo.Views
+namespace UndoRedoSample.Views
 {
 	partial class EditCityControl : UserControl
 	{
-		CitiesList cities;
+		CitiesList _cities;
 		// default position of new city
-		UndoRedo<int> cityPosition = new UndoRedo<int>(145);
-		UndoRedo<int> cityOrder = new UndoRedo<int>(5);
+	    readonly UndoRedo<int> _cityPosition = new UndoRedo<int>(145);
+	    readonly UndoRedo<int> _cityOrder = new UndoRedo<int>(5);
 
 		public EditCityControl()
 		{
@@ -33,26 +33,25 @@ namespace UndoRedoDemo.Views
 			cbCityColor.SelectedValueChanged += delegate { btnApply.Enabled = true; };
 		}
 
-		IEnumerable<string> GetColors()
+	    static IEnumerable<string> GetColors()
 		{
-			foreach (PropertyInfo p in typeof(Color).GetProperties(BindingFlags.Public | BindingFlags.Static))
-				yield return p.Name.Substring(p.Name.IndexOf(" ") + 1);
+		    return typeof(Color).GetProperties(BindingFlags.Public | BindingFlags.Static).Select(p => p.Name.Substring(p.Name.IndexOf(" ") + 1));
 		}
 
-		public void SetData(CitiesList data)
+	    public void SetData(CitiesList data)
 		{			
-			cities = data;
+			_cities = data;
 			bsrcCities.DataSource = data;
 			cbCity.DataSource = bsrcCities;
 			ReloadData();
 		}
 
-        bool reloading = false;
+        bool _reloading = false;
 		void ReloadData()
 		{
-            if (!reloading)
+            if (!_reloading)
             {
-                reloading = true;
+                _reloading = true;
                 SuspendLayout();
 
                 City c = CurrentCity;
@@ -68,7 +67,7 @@ namespace UndoRedoDemo.Views
                 btnApply.Enabled = false;
 
                 ResumeLayout();
-                reloading = false;
+                _reloading = false;
             }
 		}
 		
@@ -111,14 +110,14 @@ namespace UndoRedoDemo.Views
 		// Add City
 		private void btnAdd_Click(object sender, EventArgs e)
 		{
-			string name = "City" + cityOrder.Value;
+			string name = "City" + _cityOrder.Value;
 
 			using (UndoRedoManager.Start("Add " + name))
 			{
-				City city = new City(name, 5, cityPosition.Value, 10, 35, Color.Cyan);
-				cities.Add(city);
-				cityPosition.Value += 40;
-				cityOrder.Value++;
+				City city = new City(name, 5, _cityPosition.Value, 10, 35, Color.Cyan);
+				_cities.Add(city);
+				_cityPosition.Value += 40;
+				_cityOrder.Value++;
 				UndoRedoManager.Commit();
                 CurrentCity = city;
 			}
@@ -131,7 +130,7 @@ namespace UndoRedoDemo.Views
 			{
 				using (UndoRedoManager.Start("Remove " + CurrentCity.Name))
 				{
-					cities.Remove(CurrentCity);
+					_cities.Remove(CurrentCity);
 					UndoRedoManager.Commit();
 				}
 			}

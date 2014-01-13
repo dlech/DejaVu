@@ -1,6 +1,6 @@
-namespace UndoRedoDemo
+namespace UndoRedoSample.Views
 {
-    partial class ChartControl
+    sealed partial class ChartControl
     {
         /// <summary>
         /// Required designer variable.

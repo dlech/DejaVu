@@ -8,15 +8,15 @@ namespace DejaVu
 	/// </summary>
 	class Log
 	{
-		string[] logRecords;
-		int size;
-		int count;
-		int head;
+	    readonly string[] _logRecords;
+	    readonly int _size;
+		int _count;
+		int _head;
 
 		public Log(int maxRecords)
 		{
-			this.size = Math.Max(1, maxRecords);
-			logRecords = new string[size];
+			_size = Math.Max(1, maxRecords);
+			_logRecords = new string[_size];
 		}
 		/// <summary>
 		/// Add record to log
@@ -24,9 +24,9 @@ namespace DejaVu
 		/// <param name="record"></param>
 		public void Add(string record)
 		{
-			logRecords[head] = record;
-			head = (head + 1) % size;
-			count++;
+			_logRecords[_head] = record;
+			_head = (_head + 1) % _size;
+			_count++;
 		}
 		/// <summary>
 		/// Get log contents as a single string
@@ -34,16 +34,16 @@ namespace DejaVu
 		/// <returns></returns>
 		public new string ToString()
 		{
-			StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 
-			if (count > size)
+			if (_count > _size)
 			{
-				builder.Append("...Log had been truncated after record #" + (count - size) + "..." + Environment.NewLine);
+				builder.Append("...Log had been truncated after record #" + (_count - _size) + "..." + Environment.NewLine);
 			}
-			for (int i = 0; i < size; i++)
+			for (var i = 0; i < _size; i++)
 			{
-				int j = (head + i) % size;
-				string record = logRecords[j];
+				var j = (_head + i) % _size;
+				var record = _logRecords[j];
 				if (record != null)
 				{
 					builder.Append(record);

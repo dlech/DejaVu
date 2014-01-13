@@ -1,14 +1,9 @@
 // Siarhei Arkhipenka (c) 2006-2007. email: sbs-arhipenko@yandex.ru
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using System.Reflection;
 
-namespace UndoRedoDemo
+using System.Windows.Forms;
+using UndoRedoSample.Data;
+
+namespace UndoRedoSample
 {
     public partial class DemoForm : Form
     {

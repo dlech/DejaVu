@@ -1,4 +1,4 @@
-namespace UndoRedoDemo.Views
+namespace UndoRedoSample.Views
 {
 	partial class UndoRedoControl
 	{

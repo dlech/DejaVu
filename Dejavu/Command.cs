@@ -6,81 +6,81 @@ namespace DejaVu
 {
     class Command : IDisposable
     {
-		readonly UndoRedoArea parentArea;
+		readonly UndoRedoArea _parentArea;
         public readonly string Caption;
 		internal readonly bool Visible;
-		Dictionary<IUndoRedoMember, IChange> changes;
+        readonly Dictionary<IUndoRedoMember, IChange> _changes;
 
 		public Command(string caption, UndoRedoArea parentArea, bool visible)
         {
             Caption = caption;
-			this.parentArea = parentArea;
-			this.Visible = visible;
-			changes = new Dictionary<IUndoRedoMember, IChange>();
+			_parentArea = parentArea;
+			Visible = visible;
+			_changes = new Dictionary<IUndoRedoMember, IChange>();
         }
 
 		public bool IsEnlisted(IUndoRedoMember member)
 		{
 			// if command suspended, it will always return true to prevent changes registration
-			return changes.ContainsKey(member);
+			return _changes.ContainsKey(member);
 		}
 
 		public IChange this[IUndoRedoMember member]
 		{
 			get 
 			{
-				return changes[member];
+				return _changes[member];
 			}
 			set 
 			{
-				changes[member] = value;
+				_changes[member] = value;
 			}
 			
 		}
 		internal bool Finished = false;
 		internal void Commit()
 		{
-			foreach (IUndoRedoMember member in changes.Keys)
-				member.OnCommit(changes[member]);
+			foreach (IUndoRedoMember member in _changes.Keys)
+				member.OnCommit(_changes[member]);
 			Finished = true;
 		}
 		internal void Undo()
 		{
-			foreach (IUndoRedoMember member in changes.Keys)
-				member.OnUndo(changes[member]);
+			foreach (IUndoRedoMember member in _changes.Keys)
+				member.OnUndo(_changes[member]);
 
 			Finished = true;
 		}
 		internal void Redo()
 		{
-			foreach (IUndoRedoMember member in changes.Keys)
-				member.OnRedo(changes[member]);
+			foreach (IUndoRedoMember member in _changes.Keys)
+				member.OnRedo(_changes[member]);
 		}
 
 		internal void NotifyOnChanges(CommandDoneType commandType)
 		{
-			foreach (IUndoRedoMember member in changes.Keys)
+			foreach (IUndoRedoMember member in _changes.Keys)
 				if (member is IChangedNotification)
-					((IChangedNotification)member).OnChanged(commandType, changes[member]);
+					((IChangedNotification)member).OnChanged(commandType, _changes[member]);
 		}
 
 		public bool HasChanges
 		{
-			get { return changes.Count > 0; }
+			get { return _changes.Count > 0; }
 		}
 
 		#region IDisposable Members
 
 		void IDisposable.Dispose()
 		{
-			if (!Finished && parentArea != null)
+			if (!Finished && _parentArea != null)
 			{
-				if (parentArea.CurrentCommand == this)
-					parentArea.Cancel();
+				if (_parentArea.CurrentCommand == this)
+					_parentArea.Cancel();
 				else
 				{
-					if (parentArea.CurrentCommand != null)
-						throw new InvalidOperationException("Command '" + parentArea.CurrentCommand.Caption + "' was not commited/canceled within parent command '" + Caption + "'.");
+					if (_parentArea.CurrentCommand != null)
+						throw new InvalidOperationException("Command '" + _parentArea.CurrentCommand.Caption + "' was not commited/canceled within parent command '" + Caption + "'.");
 					else
 						throw new InvalidOperationException();
 				}
@@ -91,15 +91,15 @@ namespace DejaVu
 
 		internal void Merge(Command mergedCommand)
 		{
-			foreach (IUndoRedoMember member in mergedCommand.changes.Keys)
+			foreach (IUndoRedoMember member in mergedCommand._changes.Keys)
 			{
-				if (changes.ContainsKey(member))
+				if (_changes.ContainsKey(member))
 				{
-					changes[member].NewObject = mergedCommand.changes[member].NewObject;
+					_changes[member].NewObject = mergedCommand._changes[member].NewObject;
 				}
 				else
 				{
-					changes[member] = mergedCommand.changes[member];
+					_changes[member] = mergedCommand._changes[member];
 				}
 			}
 		}

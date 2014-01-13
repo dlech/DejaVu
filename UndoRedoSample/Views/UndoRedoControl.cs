@@ -1,15 +1,11 @@
 // Siarhei Arkhipenka (c) 2006-2007. email: sbs-arhipenko@yandex.ru
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Data;
-using System.Text;
 using System.Windows.Forms;
 using DejaVu;
-using UndoRedoSample;
 
-namespace UndoRedoDemo.Views
+namespace UndoRedoSample.Views
 {
 	public partial class UndoRedoControl : UserControl
 	{
