@@ -2,10 +2,10 @@
 
 using System;
 using System.Collections.Generic;
-using DejaVu.Collections.Generic;
 using NUnit.Framework;
+using DejaVu.Collections.Generic;
 
-namespace DejaVu.UnitTests.UndoRedoManagerTests
+namespace DejaVu.Tests.UndoRedoManagerTests
 {
 	[TestFixture]
 	public class GeneralTests

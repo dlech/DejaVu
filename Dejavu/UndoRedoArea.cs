@@ -61,8 +61,7 @@ namespace DejaVu
 		{
 		    if (_currentCommand == null)
 		    {
-		        Debug.Fail("Commands stack is empty");
-		        return null;
+		        throw new Exception("Commands stack is empty");
 		    }
 
 		    Command command = _commandsStack.Pop();

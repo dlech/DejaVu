@@ -3,7 +3,7 @@
 using System;
 using NUnit.Framework;
 
-namespace DejaVu.UnitTests.UndoRedoManagerTests
+namespace DejaVu.Tests.UndoRedoManagerTests
 {
 	[TestFixture]
 	public class LoggingTests

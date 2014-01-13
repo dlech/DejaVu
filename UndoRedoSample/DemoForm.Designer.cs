@@ -1,4 +1,6 @@
-namespace UndoRedoDemo
+using UndoRedoSample.Views;
+
+namespace UndoRedoSample
 {
     partial class DemoForm
     {
@@ -29,9 +31,9 @@ namespace UndoRedoDemo
         private void InitializeComponent()
         {
 			this.panel1 = new System.Windows.Forms.Panel();
-			this.chartControl = new UndoRedoDemo.ChartControl();
-			this.undoRedoControl1 = new UndoRedoDemo.Views.UndoRedoControl();
-			this.editCityControl = new UndoRedoDemo.Views.EditCityControl();
+			this.chartControl = new ChartControl();
+			this.undoRedoControl1 = new UndoRedoControl();
+			this.editCityControl = new EditCityControl();
 			this.panel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -89,8 +91,8 @@ namespace UndoRedoDemo
 
 		private ChartControl chartControl;
 		private System.Windows.Forms.Panel panel1;
-		private UndoRedoDemo.Views.UndoRedoControl undoRedoControl1;
-		private UndoRedoDemo.Views.EditCityControl editCityControl;
+		private UndoRedoControl undoRedoControl1;
+		private EditCityControl editCityControl;
     }
 }
 

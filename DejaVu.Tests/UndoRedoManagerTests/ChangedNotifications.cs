@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using DejaVu.Collections.Generic;
 using NUnit.Framework;
 
-namespace DejaVu.UnitTests.UndoRedoManagerTests
+namespace DejaVu.Tests.UndoRedoManagerTests
 {
 	[TestFixture]
 	public class ChangedNotifications

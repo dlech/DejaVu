@@ -1,7 +1,6 @@
 // This source is under LGPL license. Sergei Arhipenko (c) 2006-2007. email: sbs-arhipenko@yandex.ru. This notice may not be removed.
 using System;
 using System.Collections.Generic;
-using System.Runtime.Serialization;
 
 namespace DejaVu.Collections.Generic
 {
@@ -67,14 +66,6 @@ namespace DejaVu.Collections.Generic
         /// <param name="comparer">The System.Collections.Generic.IEqualityComparer<T> implementation to use when comparing keys, or null to use the default System.Collections.Generic.EqualityComparer<T> for the type of the key.</param>
         public UndoRedoDictionary(int capacity, IEqualityComparer<TKey> comparer) : base(capacity, comparer)
         {}
-        /// <summary>
-        /// Initializes a new instance of the System.Collections.Generic.Dictionary<TKey,TValue> class with serialized data.
-        /// </summary>
-        /// <param name="info">A System.Runtime.Serialization.SerializationInfo object containing the information required to serialize the System.Collections.Generic.Dictionary<TKey,TValue>.</param>
-        /// <param name="context">A System.Runtime.Serialization.StreamingContext structure containing the source and destination of the serialized stream associated with the System.Collections.Generic.Dictionary<TKey,TValue>.</param>
-        protected UndoRedoDictionary(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        { }
 
         /// <summary>
         /// Gets or sets the value associated with the specified key.
@@ -88,7 +79,7 @@ namespace DejaVu.Collections.Generic
             {
                 if (key != null)
                 {
-                    ChangesList changes = Enlist();
+                    var changes = Enlist();
 					if (changes != null)
 					{
 						if (!ContainsKey(key))
@@ -99,7 +90,7 @@ namespace DejaVu.Collections.Generic
 						}
 						else
 						{
-							TValue oldValue = base[key];
+							var oldValue = base[key];
 							changes.Add(
 								delegate { base[key] = value; },
 								delegate { base[key] = oldValue; });
@@ -117,11 +108,11 @@ namespace DejaVu.Collections.Generic
         {
             if (key != null && !ContainsKey(key))
             {
-                ChangesList changes = Enlist();
+                var changes = Enlist();
 				if (changes != null)
 					changes.Add(
-						delegate { base.Add(key, value); },
-						delegate { base.Remove(key); });
+					    () => base.Add(key, value),
+					    () => base.Remove(key));
             }
             base.Add(key, value);
         }
@@ -130,13 +121,13 @@ namespace DejaVu.Collections.Generic
         /// </summary>
         public new void Clear() 
         {
-            ChangesList changes = Enlist();
+            var changes = Enlist();
 			if (changes != null)
 			{
-				Dictionary<TKey, TValue> copy = new Dictionary<TKey, TValue>(this);
+				var copy = new Dictionary<TKey, TValue>(this);
 				changes.Add(
-						delegate { base.Clear(); },
-						delegate { foreach (TKey key in copy.Keys) { base.Add(key, copy[key]); } });
+				    () => base.Clear(),
+						delegate { foreach (var key in copy.Keys) { base.Add(key, copy[key]); } });
 			}
             base.Clear();
         }
@@ -151,11 +142,11 @@ namespace DejaVu.Collections.Generic
             TValue value;
             if (base.TryGetValue(key, out value))
             {
-                ChangesList changes = Enlist();
+                var changes = Enlist();
 				if (changes != null)
 					changes.Add(
-						delegate { base.Remove(key); },
-						delegate { base.Add(key, value); });
+					    () => base.Remove(key),
+					    () => base.Add(key, value));
 
                 return base.Remove(key);
             }
@@ -182,10 +173,10 @@ namespace DejaVu.Collections.Generic
         ChangesList Enlist()
         {
 			UndoRedoArea.AssertCommand();
-			Command command = UndoRedoArea.CurrentArea.CurrentCommand;
+			var command = UndoRedoArea.CurrentArea.CurrentCommand;
 			if (!command.IsEnlisted(this))
 			{
-				ChangesList changes = new ChangesList();
+				var changes = new ChangesList();
 				command[this] = changes;
 				return changes;
 			}
@@ -200,15 +191,15 @@ namespace DejaVu.Collections.Generic
 
         void IUndoRedoMember.OnUndo(object change)
         {
-            ChangesList changesList = (ChangesList)change;
-            for (int i = changesList.OldState.Count - 1; i >= 0; i--)
+            var changesList = (ChangesList)change;
+            for (var i = changesList.OldState.Count - 1; i >= 0; i--)
                 changesList.OldState[i]();
         }
 
         void IUndoRedoMember.OnRedo(object change)
         {
-			ChangesList changesList = (ChangesList)change;
-			for (int i = 0; i <= changesList.NewState.Count - 1; i++)
+			var changesList = (ChangesList)change;
+			for (var i = 0; i <= changesList.NewState.Count - 1; i++)
 				changesList.NewState[i]();
         }
 

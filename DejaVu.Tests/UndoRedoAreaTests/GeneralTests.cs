@@ -4,7 +4,7 @@ using System;
 using System.Threading;
 using NUnit.Framework;
 
-namespace DejaVu.UnitTests.UndoRedoAreaTests
+namespace DejaVu.Tests.UndoRedoAreaTests
 {
 	[TestFixture]
 	public class GeneralTests

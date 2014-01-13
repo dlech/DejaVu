@@ -2,18 +2,15 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{F33D6FE4-E1B9-42EE-95C6-34B30E2CFF68}</ProjectGuid>
+    <ProjectGuid>{1281BE88-7D93-4493-8839-15E8F630328A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DejaVu</RootNamespace>
-    <AssemblyName>DejaVu</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Profile158</TargetFrameworkProfile>
+    <RootNamespace>DejaVu.Tests</RootNamespace>
+    <AssemblyName>DejaVu.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,27 +30,40 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <!-- A reference to the entire .NET Framework is automatically included -->
-    <Content Include="CodeSnippet\!readme.txt" />
+    <Reference Include="nunit.framework, Version=2.6.3.13283, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\NUnit.2.6.3\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Change.cs" />
-    <Compile Include="Collections\Generic\UndoRedoDictionary.cs" />
-    <Compile Include="Collections\Generic\UndoRedoList.cs" />
-    <Compile Include="Command.cs" />
-    <Compile Include="Events.cs" />
-    <Compile Include="IUndoRedoMember.cs" />
-    <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UndoRedoArea.cs" />
-    <Compile Include="UndoRedoManager.cs" />
-    <Compile Include="UndoRedoProperty.cs" />
+    <Compile Include="UndoRedoAreaTests\GeneralTests.cs" />
+    <Compile Include="UndoRedoManagerTests\AffinedCommandsTests.cs" />
+    <Compile Include="UndoRedoManagerTests\ChangedNotifications.cs" />
+    <Compile Include="UndoRedoManagerTests\DictionaryTests.cs" />
+    <Compile Include="UndoRedoManagerTests\GeneralTests.cs" />
+    <Compile Include="UndoRedoManagerTests\ListTest.cs" />
+    <Compile Include="UndoRedoManagerTests\LoggingTests.cs" />
+    <Compile Include="UndoRedoManagerTests\NestedCommandsTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="CodeSnippet\undoredo.snippet" />
     <None Include="dejavu.snk" />
+    <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\DejaVu\DejaVu.csproj">
+      <Project>{f33d6fe4-e1b9-42ee-95c6-34b30e2cff68}</Project>
+      <Name>DejaVu</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
