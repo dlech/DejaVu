@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DejaVu", "Dejavu\DejaVu.csproj", "{A204BD9C-1C1A-4AE8-9716-B7B6C67E09F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UndoRedoSample", "UndoRedoSample\UndoRedoSample.csproj", "{B4290AB4-7C88-4828-990B-17FF42B49A59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DejaVu.UnitTests", "DejaVu.UnitTests\DejaVu.UnitTests.csproj", "{772EDBE3-DD9C-466A-AFA6-D7950BA35D69}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A204BD9C-1C1A-4AE8-9716-B7B6C67E09F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A204BD9C-1C1A-4AE8-9716-B7B6C67E09F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A204BD9C-1C1A-4AE8-9716-B7B6C67E09F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A204BD9C-1C1A-4AE8-9716-B7B6C67E09F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4290AB4-7C88-4828-990B-17FF42B49A59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4290AB4-7C88-4828-990B-17FF42B49A59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4290AB4-7C88-4828-990B-17FF42B49A59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4290AB4-7C88-4828-990B-17FF42B49A59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{772EDBE3-DD9C-466A-AFA6-D7950BA35D69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{772EDBE3-DD9C-466A-AFA6-D7950BA35D69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{772EDBE3-DD9C-466A-AFA6-D7950BA35D69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{772EDBE3-DD9C-466A-AFA6-D7950BA35D69}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
