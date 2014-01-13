@@ -7,28 +7,28 @@ using System.Diagnostics;
 
 namespace DejaVu.Collections.Generic
 {
-    public class UndoRedoList<T> : IUndoRedoMember, IList<T>, ICollection<T>, IEnumerable<T>, IList, ICollection, IEnumerable, IChangedNotification
+    public class UndoRedoList<T> : IUndoRedoMember, IList<T>, IList, IChangedNotification
     {
-        List<T> list;
+        List<T> _list;
 
         #region IUndoRedoMember Members
 
         void IUndoRedoMember.OnCommit(object change)
         {
             Debug.Assert(change != null);
-            ((Change<List<T>>)change).NewState = list;
+            ((Change<List<T>>)change).NewState = _list;
         }
 
         void IUndoRedoMember.OnUndo(object change)
         {
             Debug.Assert(change != null);
-            list = ((Change<List<T>>)change).OldState;
+            _list = ((Change<List<T>>)change).OldState;
         }
 
         void IUndoRedoMember.OnRedo(object change)
         {
             Debug.Assert(change != null);
-            list = ((Change<List<T>>)change).NewState;
+            _list = ((Change<List<T>>)change).NewState;
         }
 
 		public object Owner
@@ -78,25 +78,25 @@ namespace DejaVu.Collections.Generic
 			Command command = UndoRedoArea.CurrentArea.CurrentCommand;
 			if (!command.IsEnlisted(this))
 			{
-				Change<List<T>> change = new Change<List<T>>();
-				change.OldState = list;
+				var change = new Change<List<T>>();
+				change.OldState = _list;
 				command[this] = change;
 				if (copyItems)
-					list = new List<T>(list);
+					_list = new List<T>(_list);
 				else
-					list = new List<T>();
+					_list = new List<T>();
 			}
         }        
 
         ///<summary>
         /// Initializes a new instance of the System.Collections.Generic.List<T> class
         /// that is empty and has the default initial capacity.
-        /// </summary>
+        ///</summary>
         public UndoRedoList()
         {
-            list = new List<T>();
+            _list = new List<T>();
         }
-        //
+        
         ///<summary>
         // Initializes a new instance of the System.Collections.Generic.List<T> class
         // that contains elements copied from the specified collection and has sufficient
@@ -109,10 +109,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // collection is null.
+        ///</summary>
         public UndoRedoList(IEnumerable<T> collection)
         {
-            list = new List<T>(collection);
+            _list = new List<T>(collection);
         }
+
         ///<summary>
         // Gets or sets the total number of elements the internal data structure can
         // hold without resizing.
@@ -125,20 +127,22 @@ namespace DejaVu.Collections.Generic
         //   System.ArgumentOutOfRangeException:
         // System.Collections.Generic.List<T>.Capacity is set to a value that is less
         // than System.Collections.Generic.List<T>.Count.
+        ///</summary>
         public int Capacity 
         {
-            get { return list.Capacity; }
-            set { list.Capacity = value; }
+            get { return _list.Capacity; }
+            set { _list.Capacity = value; }
         }
-        //
+        
         ///<summary>
         // Gets the number of elements actually contained in the System.Collections.Generic.List<T>.
         //
         // Returns:
         // The number of elements actually contained in the System.Collections.Generic.List<T>.
+        ///</summary>
         public int Count 
         {
-            get { return list.Count; }
+            get { return _list.Count; }
         }
 
         ///<summary>
@@ -154,13 +158,14 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentOutOfRangeException:
         // index is less than 0.-or-index is equal to or greater than System.Collections.Generic.List<T>.Count.
+        ///</summary>
         public T this[int index] 
         {
-            get { return list[index]; }
+            get { return _list[index]; }
             set
             {
                 Enlist();
-                list[index] = value;
+                _list[index] = value;
             }
         }
 
@@ -171,10 +176,11 @@ namespace DejaVu.Collections.Generic
         //   item:
         // The object to be added to the end of the System.Collections.Generic.List<T>.
         // The value can be null for reference types.
+        ///</summary>
         public void Add(T item)
         {
             Enlist();
-            list.Add(item);
+            _list.Add(item);
         }
         //
         ///<summary>
@@ -189,10 +195,11 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // collection is null.
+        ///</summary>
         public void AddRange(IEnumerable<T> collection)
         {
             Enlist();
-            list.AddRange(collection);
+            _list.AddRange(collection);
         }
         //
         ///<summary>
@@ -202,9 +209,10 @@ namespace DejaVu.Collections.Generic
         // Returns:
         // A System.Collections.Generic.ReadOnlyCollection`1 that acts as a read-only
         // wrapper around the current System.Collections.Generic.List<T>.
+        ///</summary>
         public ReadOnlyCollection<T> AsReadOnly()
         {
-            return list.AsReadOnly();
+            return _list.AsReadOnly();
         }
         //
         ///<summary>
@@ -226,9 +234,10 @@ namespace DejaVu.Collections.Generic
         // The default comparer System.Collections.Generic.Comparer<T>.Default cannot
         // find an implementation of the System.IComparable<T> generic interface or
         // the System.IComparable interface for type T.
+        ///</summary>
         public int BinarySearch(T item)
         {
-            return list.BinarySearch(item);
+            return _list.BinarySearch(item);
         }
         //
         ///<summary>
@@ -254,11 +263,12 @@ namespace DejaVu.Collections.Generic
         // comparer is null, and the default comparer System.Collections.Generic.Comparer<T>.Default
         // cannot find an implementation of the System.IComparable<T> generic interface
         // or the System.IComparable interface for type T.
+        ///</summary>
         public int BinarySearch(T item, IComparer<T> comparer)
         {
-            return list.BinarySearch(item, comparer);
+            return _list.BinarySearch(item, comparer);
         }
-        //
+        
         ///<summary>
         // Searches a range of elements in the sorted System.Collections.Generic.List<T>
         // for an element using the specified comparer and returns the zero-based index
@@ -295,13 +305,15 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentException:
         // index and count do not denote a valid range in the System.Collections.Generic.List<T>.
+        ///</summary>
         public int BinarySearch(int index, int count, T item, IComparer<T> comparer)
         { 
-            return list.BinarySearch(index, count, item, comparer); 
+            return _list.BinarySearch(index, count, item, comparer); 
         }
-        //
+        
         ///<summary>
         // Removes all elements from the System.Collections.Generic.List<T>.
+        ///</summary>
         public void Clear()
         {
 			UndoRedoArea.AssertCommand();
@@ -311,9 +323,9 @@ namespace DejaVu.Collections.Generic
 				Enlist(false);
 			}
 			else
-				list.Clear();
+				_list.Clear();
         }
-        //
+        
         ///<summary>
         // Determines whether an element is in the System.Collections.Generic.List<T>.
         //
@@ -325,11 +337,12 @@ namespace DejaVu.Collections.Generic
         // Returns:
         // true if item is found in the System.Collections.Generic.List<T>; otherwise,
         // false.
+        ///</summary>
         public bool Contains(T item)
         {
-            return list.Contains(item);
+            return _list.Contains(item);
         }
-        //
+        
         ///<summary>
         // Converts the elements in the current System.Collections.Generic.List<T> to
         // another type, and returns a list containing the converted elements.
@@ -346,11 +359,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // converter is null.
+        ///</summary>
         public List<TOutput> ConvertAll<TOutput>(Converter<T, TOutput> converter)
         {
-            return list.ConvertAll<TOutput>(converter);
+            return _list.ConvertAll(converter);
         }
-        //
+        
         ///<summary>
         // Copies the entire System.Collections.Generic.List<T> to a compatible one-dimensional
         // array, starting at the beginning of the target array.
@@ -368,11 +382,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // array is null.
+        ///</summary>
         public void CopyTo(T[] array)
         {
-            list.CopyTo(array);
+            _list.CopyTo(array);
         }
-        //
+        
         ///<summary>
         // Copies the entire System.Collections.Generic.List<T> to a compatible one-dimensional
         // array, starting at the specified index of the target array.
@@ -397,11 +412,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // array is null.
+        ///</summary>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            list.CopyTo(array, arrayIndex);
+            _list.CopyTo(array, arrayIndex);
         }
-        //
+        
         ///<summary>
         // Copies a range of elements from the System.Collections.Generic.List<T> to
         // a compatible one-dimensional array, starting at the specified index of the
@@ -437,11 +453,12 @@ namespace DejaVu.Collections.Generic
         // to or greater than the length of array.-or-The number of elements from index
         // to the end of the source System.Collections.Generic.List<T> is greater than
         // the available space from arrayIndex to the end of the destination array.
+        ///</summary>
         public void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
-            list.CopyTo(index, array, arrayIndex, count);
+            _list.CopyTo(index, array, arrayIndex, count);
         }
-        //
+        
         ///<summary>
         // Determines whether the System.Collections.Generic.List<T> contains elements
         // that match the conditions defined by the specified predicate.
@@ -459,11 +476,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public bool Exists(Predicate<T> match)
         {
-            return list.Exists(match);
+            return _list.Exists(match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the first occurrence within the entire System.Collections.Generic.List<T>.
@@ -480,11 +498,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public T Find(Predicate<T> match)
         {
-            return list.Find(match);
+            return _list.Find(match);
         }
-        //
+        
         ///<summary>
         // Retrieves the all the elements that match the conditions defined by the specified
         // predicate.
@@ -502,11 +521,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public List<T> FindAll(Predicate<T> match)
         {
-            return list.FindAll(match);
+            return _list.FindAll(match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the zero-based index of the first occurrence within
@@ -524,11 +544,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int FindIndex(Predicate<T> match)
         {
-            return list.FindIndex(match);
+            return _list.FindIndex(match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the zero-based index of the first occurrence within
@@ -553,11 +574,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int FindIndex(int startIndex, Predicate<T> match)
         {
-            return list.FindIndex(startIndex, match);
+            return _list.FindIndex(startIndex, match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the zero-based index of the first occurrence within
@@ -587,11 +609,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int FindIndex(int startIndex, int count, Predicate<T> match)
         {
-            return list.FindIndex(startIndex, count, match);
+            return _list.FindIndex(startIndex, count, match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the last occurrence within the entire System.Collections.Generic.List<T>.
@@ -608,11 +631,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public T FindLast(Predicate<T> match)
         {
-            return list.FindLast(match);
+            return _list.FindLast(match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the zero-based index of the last occurrence within
@@ -630,11 +654,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int FindLastIndex(Predicate<T> match)
         {
-            return list.FindLastIndex(match);
+            return _list.FindLastIndex(match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the zero-based index of the last occurrence within
@@ -659,11 +684,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int FindLastIndex(int startIndex, Predicate<T> match)
         {
-            return list.FindLastIndex(startIndex, match);
+            return _list.FindLastIndex(startIndex, match);
         }
-        //
+        
         ///<summary>
         // Searches for an element that matches the conditions defined by the specified
         // predicate, and returns the zero-based index of the last occurrence within
@@ -693,11 +719,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int FindLastIndex(int startIndex, int count, Predicate<T> match)
         {
-            return list.FindLastIndex(startIndex, count, match);
+            return _list.FindLastIndex(startIndex, count, match);
         }
-        //
+        
         ///<summary>
         // Performs the specified action on each element of the System.Collections.Generic.List<T>.
         //
@@ -708,21 +735,23 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // action is null.
+        ///</summary>
         public void ForEach(Action<T> action)
         {
-            list.ForEach(action); // even if action modifies the list, the changes will be caught by appropriate changing member
+            _list.ForEach(action); // even if action modifies the list, the changes will be caught by appropriate changing member
         }
-        //
+        
         ///<summary>
         // Returns an enumerator that iterates through the System.Collections.Generic.List<T>.
         //
         // Returns:
         // A System.Collections.Generic.List<T>.Enumerator for the System.Collections.Generic.List<T>.
+        ///</summary>
         public virtual IEnumerator<T> GetEnumerator()
         {
-            return list.GetEnumerator();
+            return _list.GetEnumerator();
         }
-        //
+        
         ///<summary>
         // Creates a shallow copy of a range of elements in the source System.Collections.Generic.List<T>.
         //
@@ -743,11 +772,12 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentException:
         // index and count do not denote a valid range of elements in the System.Collections.Generic.List<T>.
+        ///</summary>
         public List<T> GetRange(int index, int count)
         {
-            return list.GetRange(index, count);
+            return _list.GetRange(index, count);
         }
-        //
+        
         ///<summary>
         // Searches for the specified object and returns the zero-based index of the
         // first occurrence within the entire System.Collections.Generic.List<T>.
@@ -759,12 +789,13 @@ namespace DejaVu.Collections.Generic
         //
         // Returns:
         // The zero-based index of the first occurrence of item within the entire System.Collections.Generic.List<T>,
+        ///</summary>
         // if found; otherwise, –1.
         public virtual int IndexOf(T item)
         {
-            return list.IndexOf(item);
+            return _list.IndexOf(item);
         }
-        //
+        
         ///<summary>
         // Searches for the specified object and returns the zero-based index of the
         // first occurrence within the range of elements in the System.Collections.Generic.List<T>
@@ -786,11 +817,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentOutOfRangeException:
         // index is outside the range of valid indexes for the System.Collections.Generic.List<T>.
+        ///</summary>
         public int IndexOf(T item, int index)
         {
-            return list.IndexOf(item, index);
+            return _list.IndexOf(item, index);
         }
-        //
+        
         ///<summary>
         // Searches for the specified object and returns the zero-based index of the
         // first occurrence within the range of elements in the System.Collections.Generic.List<T>
@@ -817,11 +849,12 @@ namespace DejaVu.Collections.Generic
         // index is outside the range of valid indexes for the System.Collections.Generic.List<T>.-or-count
         // is less than 0.-or-index and count do not specify a valid section in the
         // System.Collections.Generic.List<T>.
+        ///</summary>
         public int IndexOf(T item, int index, int count)
         {
-            return list.IndexOf(item, index, count);
+            return _list.IndexOf(item, index, count);
         }
-        //
+        
         ///<summary>
         // Inserts an element into the System.Collections.Generic.List<T> at the specified
         // index.
@@ -836,12 +869,13 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentOutOfRangeException:
         // index is less than 0.-or-index is greater than System.Collections.Generic.List<T>.Count.
+        ///</summary>
         public void Insert(int index, T item)
         {
             Enlist();
-            list.Insert(index, item);
+            _list.Insert(index, item);
         }
-        //
+        
         ///<summary>
         // Inserts the elements of a collection into the System.Collections.Generic.List<T>
         // at the specified index.
@@ -861,12 +895,13 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // collection is null.
+        ///</summary>
         public void InsertRange(int index, IEnumerable<T> collection)
         {
             Enlist();
-            list.InsertRange(index, collection);
+            _list.InsertRange(index, collection);
         }
-        //
+        
         ///<summary>
         // Searches for the specified object and returns the zero-based index of the
         // last occurrence within the entire System.Collections.Generic.List<T>.
@@ -879,11 +914,12 @@ namespace DejaVu.Collections.Generic
         // Returns:
         // The zero-based index of the last occurrence of item within the entire the
         // System.Collections.Generic.List<T>, if found; otherwise, –1.
+        ///</summary>
         public int LastIndexOf(T item)
         {
-            return list.LastIndexOf(item);
+            return _list.LastIndexOf(item);
         }
-        //
+        
         ///<summary>
         // Searches for the specified object and returns the zero-based index of the
         // last occurrence within the range of elements in the System.Collections.Generic.List<T>
@@ -905,11 +941,12 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentOutOfRangeException:
         // index is outside the range of valid indexes for the System.Collections.Generic.List<T>.
+        ///</summary>
         public int LastIndexOf(T item, int index)
         {
-            return list.LastIndexOf(item, index);
+            return _list.LastIndexOf(item, index);
         }
-        //
+        
         ///<summary>
         // Searches for the specified object and returns the zero-based index of the
         // last occurrence within the range of elements in the System.Collections.Generic.List<T>
@@ -937,11 +974,12 @@ namespace DejaVu.Collections.Generic
         // index is outside the range of valid indexes for the System.Collections.Generic.List<T>.-or-count
         // is less than 0.-or-index and count do not specify a valid section in the
         // System.Collections.Generic.List<T>.
+        ///</summary>
         public int LastIndexOf(T item, int index, int count)
         {
-            return list.LastIndexOf(item, index, count);
+            return _list.LastIndexOf(item, index, count);
         }
-        //
+        
         ///<summary>
         // Removes the first occurrence of a specific object from the System.Collections.Generic.List<T>.
         //
@@ -953,12 +991,13 @@ namespace DejaVu.Collections.Generic
         // Returns:
         // true if item is successfully removed; otherwise, false.  This method also
         // returns false if item was not found in the System.Collections.Generic.List<T>.
+        ///</summary>
         public bool Remove(T item)
         {
             Enlist();
-            return list.Remove(item);
+            return _list.Remove(item);
         }
-        //
+        
         ///<summary>
         // Removes the all the elements that match the conditions defined by the specified
         // predicate.
@@ -975,12 +1014,13 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public int RemoveAll(Predicate<T> match)
         {
             Enlist();
-            return list.RemoveAll(match);
+            return _list.RemoveAll(match);
         }
-        //
+        
         ///<summary>
         // Removes the element at the specified index of the System.Collections.Generic.List<T>.
         //
@@ -991,12 +1031,13 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentOutOfRangeException:
         // index is less than 0.-or-index is equal to or greater than System.Collections.Generic.List<T>.Count.
+        ///</summary>
         public void RemoveAt(int index)
         {
             Enlist();
-            list.RemoveAt(index);
+            _list.RemoveAt(index);
         }
-        //
+        
         ///<summary>
         // Removes a range of elements from the System.Collections.Generic.List<T>.
         //
@@ -1013,20 +1054,22 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentException:
         // index and count do not denote a valid range of elements in the System.Collections.Generic.List<T>.
+        ///</summary>
         public void RemoveRange(int index, int count)
         {
             Enlist();
-            list.RemoveRange(index, count);
+            _list.RemoveRange(index, count);
         }
-        //
+        
         ///<summary>
         // Reverses the order of the elements in the entire System.Collections.Generic.List<T>.
+        ///</summary>
         public void Reverse()
         {
             Enlist();
-            list.Reverse();
+            _list.Reverse();
         }
-        //
+        
         ///<summary>
         // Reverses the order of the elements in the specified range.
         //
@@ -1043,12 +1086,13 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentOutOfRangeException:
         // index is less than 0.-or-count is less than 0.
+        ///</summary>
         public void Reverse(int index, int count)
         {
             Enlist();
-            list.Reverse(index, count);
+            _list.Reverse(index, count);
         }
-        //
+        
         ///<summary>
         // Sorts the elements in the entire System.Collections.Generic.List<T> using
         // the default comparer.
@@ -1058,12 +1102,13 @@ namespace DejaVu.Collections.Generic
         // The default comparer System.Collections.Generic.Comparer<T>.Default cannot
         // find an implementation of the System.IComparable<T> generic interface or
         // the System.IComparable interface for type T.
+        ///</summary>
         public void Sort()
         {
             Enlist();
-            list.Sort();
+            _list.Sort();
         }
-        //
+        
         ///<summary>
         // Sorts the elements in the entire System.Collections.Generic.List<T> using
         // the specified System.Comparison<T>.
@@ -1079,12 +1124,13 @@ namespace DejaVu.Collections.Generic
         //
         //   System.ArgumentNullException:
         // comparison is null.
+        ///</summary>
         public void Sort(Comparison<T> comparison)
         {
             Enlist();
-            list.Sort(comparison);
+            _list.Sort(comparison);
         }
-        //
+        
         ///<summary>
         // Sorts the elements in the entire System.Collections.Generic.List<T> using
         // the specified comparer.
@@ -1103,12 +1149,13 @@ namespace DejaVu.Collections.Generic
         // comparer is null, and the default comparer System.Collections.Generic.Comparer<T>.Default
         // cannot find implementation of the System.IComparable<T> generic interface
         // or the System.IComparable interface for type T.
+        ///</summary>
         public void Sort(IComparer<T> comparer)
         {
             Enlist();
-            list.Sort(comparer);
+            _list.Sort(comparer);
         }
-        //
+        
         ///<summary>
         // Sorts the elements in a range of elements in System.Collections.Generic.List<T>
         // using the specified comparer.
@@ -1137,29 +1184,32 @@ namespace DejaVu.Collections.Generic
         // comparer is null, and the default comparer System.Collections.Generic.Comparer<T>.Default
         // cannot find implementation of the System.IComparable<T> generic interface
         // or the System.IComparable interface for type T.
+        ///</summary>
         public void Sort(int index, int count, IComparer<T> comparer)
         {
             Enlist();
-            list.Sort(index, count, comparer);
+            _list.Sort(index, count, comparer);
         }
-        //
+        
         ///<summary>
         // Copies the elements of the System.Collections.Generic.List<T> to a new array.
         //
         // Returns:
         // An array containing copies of the elements of the System.Collections.Generic.List<T>.
+        ///</summary>
         public T[] ToArray()
         {
-            return list.ToArray();
+            return _list.ToArray();
         }
-        //
+        
         ///<summary>
         // Sets the capacity to the actual number of elements in the System.Collections.Generic.List<T>,
         // if that number is less than a threshold value.
+        ///</summary>
         public void TrimExcess()
         {
         }
-        //
+        
         ///<summary>
         // Determines whether every element in the System.Collections.Generic.List<T>
         // matches the conditions defined by the specified predicate.
@@ -1177,45 +1227,45 @@ namespace DejaVu.Collections.Generic
         // Exceptions:
         //   System.ArgumentNullException:
         // match is null.
+        ///</summary>
         public bool TrueForAll(Predicate<T> match)
         {
-            return list.TrueForAll(match);
+            return _list.TrueForAll(match);
         }
 
         bool ICollection<T>.IsReadOnly
         {
             get
             {
-                return ((ICollection<T>)list).IsReadOnly;
+                return ((ICollection<T>)_list).IsReadOnly;
             }
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return ((IEnumerable)list).GetEnumerator();
+            return ((IEnumerable)_list).GetEnumerator();
         }
 
-
-
+        
         #region ICollection Members
 
         void ICollection.CopyTo(Array array, int index)
         {
-            ((ICollection)list).CopyTo((T[])array, index);
+            ((ICollection)_list).CopyTo(array, index);
         }
 
         int ICollection.Count
         {
-            get { return list.Count; }
+            get { return _list.Count; }
         }
 
         bool ICollection.IsSynchronized
         {
-            get { return ((ICollection)list).IsSynchronized; }
+            get { return ((ICollection)_list).IsSynchronized; }
         }
 
         object ICollection.SyncRoot
         {
-            get { return ((ICollection)list).SyncRoot; }
+            get { return ((ICollection)_list).SyncRoot; }
         }
 
         #endregion
@@ -1225,64 +1275,64 @@ namespace DejaVu.Collections.Generic
         int IList.Add(object value)
         {
             Enlist();
-            return ((IList)list).Add((T)value);
+            return ((IList)_list).Add((T)value);
             //return l
         }
 
         void IList.Clear()
         {
             Enlist(false);
-            ((IList)list).Clear();            
+            ((IList)_list).Clear();            
         }
 
         bool IList.Contains(object value)
         {
-            return ((IList)list).Contains((T)value);
+            return ((IList)_list).Contains((T)value);
         }
 
         int IList.IndexOf(object value)
         {
-            return ((IList)list).IndexOf((T)value);
+            return ((IList)_list).IndexOf((T)value);
         }
 
         void IList.Insert(int index, object value)
         {
             Enlist();
-            ((IList)list).Insert(index, (T)value);
+            ((IList)_list).Insert(index, (T)value);
         }
 
         bool IList.IsFixedSize
         {
-            get { return ((IList)list).IsFixedSize; }
+            get { return ((IList)_list).IsFixedSize; }
         }
 
         bool IList.IsReadOnly
         {
-            get { return ((IList)list).IsReadOnly; }
+            get { return ((IList)_list).IsReadOnly; }
         }
 
         void IList.Remove(object value)
         {
             Enlist();
-            ((IList)list).Remove((T)value);
+            ((IList)_list).Remove((T)value);
         }
 
         void IList.RemoveAt(int index)
         {
             Enlist();
-            list.RemoveAt(index);
+            _list.RemoveAt(index);
         }
 
         object IList.this[int index]
         {
             get
             {
-                return list[index];
+                return _list[index];
             }
             set
             {
                 Enlist();
-                list[index] = (T)value;
+                _list[index] = (T)value;
             }
         }
 
