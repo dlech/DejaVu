@@ -78,6 +78,7 @@ $tf/
 _ReSharper*/
 *.[Rr]e[Ss]harper
 *.DotSettings.user
+*.DotSettings
 
 # JustCode is a .NET coding addin-in
 .JustCode
@@ -92,6 +93,9 @@ _TeamCity*
 *.ncrunch*
 _NCrunch_*
 .*crunch*.local.xml
+
+# Nuget
+*.nupkg
 
 # MightyMoose
 *.mm.*
