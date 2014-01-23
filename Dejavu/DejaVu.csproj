@@ -38,6 +38,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Change.cs" />
+    <Compile Include="Collections\Generic\ObservableUndoRedoList.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Collections\Generic\UndoRedoDictionary.cs" />
     <Compile Include="Collections\Generic\UndoRedoList.cs" />
     <Compile Include="Command.cs" />
